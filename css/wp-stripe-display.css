@@ -234,6 +234,11 @@ form#wp-stripe-payment-form select {
         cursor: pointer;
 }
 
+span.wp-stripe-radio-text {
+        font-size: 14px;
+        color: #808080;
+}
+
 input[type=checkbox], input[type=radio] {
         cursor: pointer;
 }
@@ -294,6 +299,10 @@ form#wp-stripe-payment-form input[type=checkbox], form#wp-stripe-payment-form in
 
         line-height: normal;
         border: none;
+}
+
+form#wp-stripe-payment-form input[type=radio] {
+        margin: 3px 0 3px 3px;
 }
 
 form#wp-stripe-payment-form select {

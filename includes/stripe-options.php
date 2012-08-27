@@ -13,6 +13,7 @@ function wp_stripe_options_init() {
         add_settings_section( 'wp_stripe_section_main', '', 'wp_stripe_options_header', 'wp_stripe_section' );
         add_settings_field( 'stripe_header', 'Payment Form Header', 'wp_stripe_field_header', 'wp_stripe_section', 'wp_stripe_section_main' );
         add_settings_field( 'stripe_recent_switch', 'Enable Recent Widget?', 'wp_stripe_field_recent', 'wp_stripe_section', 'wp_stripe_section_main' );
+        add_settings_field( 'stripe_recurring_switch', 'Enable Recurring Donations?', 'wp_stripe_field_recurring', 'wp_stripe_section', 'wp_stripe_section_main' );
         add_settings_field( 'stripe_css_switch', 'Enable Payment Form CSS?', 'wp_stripe_field_css', 'wp_stripe_section', 'wp_stripe_section_main' );
         add_settings_section( 'wp_stripe_section_api', '', 'wp_stripe_options_header_api', 'wp_stripe_section' );
         add_settings_field( 'stripe_api_switch', 'Enable Test API Environment?', 'wp_stripe_field_switch', 'wp_stripe_section', 'wp_stripe_section_api' );
@@ -84,6 +85,20 @@ function wp_stripe_field_recent () {
 
         foreach( $items as $item ) {
             $selected = ($options['stripe_recent_switch']==$item) ? 'selected="selected"' : '';
+            echo "<option value='$item' $selected>$item</option>";
+        }
+
+        echo "</select>";
+}
+
+function wp_stripe_field_recurring () {
+
+        $options = get_option( 'wp_stripe_options' );
+        $items = array( 'Yes', 'No' );
+        echo "<select id='stripe_api_switch' name='wp_stripe_options[stripe_recurring_switch]'>";
+
+        foreach( $items as $item ) {
+            $selected = ($options['stripe_recurring_switch']==$item) ? 'selected="selected"' : '';
             echo "<option value='$item' $selected>$item</option>";
         }
 
@@ -215,7 +230,8 @@ function wp_stripe_options_page() {
               <thead><tr class="wp-stripe-absolute"></tr><tr>
 
                   <th style="width:44px;"><div class="dot-stripe-live"></div><div class="dot-stripe-public"></div></th>
-                  <th style="width:200px;">Person</th>
+                  <th style="width:180px;">Person</th>
+                  <th style="width:60px;">Type</th>
                   <th style="width:100px;">Net Amount (Fee)</th>
                   <th style="width:80px;">Date</th>
 

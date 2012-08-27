@@ -16,6 +16,7 @@ jQuery(document).ready(function($) {
     var resetStripeForm = function() {
         $("#wp-stripe-payment-form").get(0).reset();
         $('input').removeClass('stripe-valid stripe-invalid');
+        $('#frequency').hide();
     }
 
     function stripeResponseHandler(status, response) {
@@ -71,6 +72,14 @@ jQuery(document).ready(function($) {
 
         return false;
 
+    });
+
+    $(".wp-stripe-type").click(function() {
+      if ( $(".wp-stripe-type:checked").val() == "recurring" ) {
+        $("#frequency").show();
+      } else {
+        $("#frequency").hide();
+      }
     });
 });
 

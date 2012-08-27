@@ -92,6 +92,115 @@ function wp_stripe_charge($amount, $card, $name, $description) {
 }
 
 /**
+ * Find existing plan or create a new one from parameters using Stripe PHP Library
+ *
+ * @param $amount int transaction amount in cents (i.e. $1 = '100')
+ * @param $interval string one of two options, 'month' or 'year'
+ * @return array
+ *
+ * @since 1.4.5
+ *
+ */
+
+function wp_stripe_find_or_create_plan($amount, $interval) {
+    
+    /*
+     * Currency - All amounts must be denominated in USD when creating charges with Stripe — the currency conversion happens automatically
+     */
+    $currency = 'usd';
+
+    $plan = null;
+
+    // Construct desired plan
+    $requested_plan = array(
+        'amount' => $amount,
+        'interval' => $interval,
+        'name' => '$' . $amount/100 . '/' . $interval,
+        'currency' => $currency,
+        'id' => $amount . $interval[0] . '_wp'
+    );
+
+    $existing_plans = Stripe_Plan::all();
+
+    // Loop through plans, looking for one that matches our desired plan
+    foreach( $existing_plans->data as $existing_plan ) {
+        if ( $existing_plan->amount == $requested_plan['amount'] && $existing_plan->interval == $requested_plan['interval'] ) {
+            $plan = $existing_plan;
+            break;
+        }
+    }
+
+    // Create a new plan if we didn't find one that matched
+    if ( !$plan ) {
+        $plan = Stripe_Plan::create($requested_plan);
+    }
+    
+    return $plan;
+}
+
+/**
+ * Create customer by susbscribing them to a plan using Stripe PHP Library
+ *
+ * @param $email string
+ * @param $card string
+ * @param $plan_id int 
+ * @return array
+ *
+ * @since 1.4.5
+ *
+ */
+
+function wp_stripe_subscribe_customer_to_plan($email, $card, $plan_id) {
+
+    $customer = array(
+        'email' => $email,
+        'card' => $card,
+        'plan' => $plan_id
+    );
+
+    // TODO: build comment from extra form fields
+
+    $response = Stripe_Customer::create($customer);
+
+    return $response;
+}
+
+/**
+ * Find the charge for a customer's last invoice on a given plan using Stripe PHP Library
+ *
+ * @param $customer_id int
+ * @param $plan_id int 
+ * @return array
+ *
+ * @since 1.4.5
+ *
+ */
+
+function wp_stripe_find_customer_subscription_charge($customer_id, $plan_id) {
+
+    $customer_invoices = Stripe_Invoice::all(array('customer' => $customer_id));
+
+    $matching_invoice = null; 
+
+    // Loop through invoices looking for a matching subscription
+    foreach( $customer_invoices->data as $invoice) {
+        if ( $invoice->lines->subscriptions ) {
+            foreach( $invoice->lines->subscriptions as $subscription ) {
+                if ( $subscription->plan->id == $plan_id ) {
+                    $matching_invoice = $invoice;  
+                    break 2;
+                }
+            }
+        }
+    }
+
+    // Get the charge if we found a matching invoice
+    $charge = $matching_invoice ? Stripe_Charge::retrieve($matching_invoice->charge) : null;
+
+    return $charge;
+}
+
+/**
  * 3-step function to Process & Save Transaction
  *
  * 1) Capture POST
@@ -120,6 +229,7 @@ function wp_stripe_charge_initiate() {
         $email = $_POST['wp_stripe_email'];
         $amount = str_replace('$', '', $_POST['wp_stripe_amount']) * 100;
         $card = $_POST['stripeToken'];
+        $type = $_POST['wp_stripe_type'];
 
         if ( !$_POST['wp_stripe_comment'] ) {
             $comment = __('E-mail: ', 'wp-stipe') . $_POST['wp_stripe_email'] . ' - ' . __('This transaction has no additional details', 'wp-stripe');
@@ -131,7 +241,26 @@ function wp_stripe_charge_initiate() {
 
         try {
 
-            $response = wp_stripe_charge($amount, $card, $name, $comment);
+            // Recurring donation
+            if ( $type && $type == 'recurring' ) {
+
+                $interval = $_POST['wp_stripe_interval'];
+
+                // Make sure we have the plan we want
+                $plan = wp_stripe_find_or_create_plan($amount, $interval);
+                
+                // Subscribe the customer to that plan
+                $customer = wp_stripe_subscribe_customer_to_plan ($email, $card, $plan->id);
+
+                // Get the charge that we just created
+                $response = wp_stripe_find_customer_subscription_charge($customer->id, $plan->id);
+              
+            // One Time donation
+            } else {
+
+                $response = wp_stripe_charge($amount, $card, $name, $comment);
+
+            }
 
             $id = $response->id;
             $amount = ($response->amount)/100;
@@ -140,8 +269,9 @@ function wp_stripe_charge_initiate() {
             $live = $response->livemode;
             $paid = $response->paid;
             $fee = $response->fee;
+            $type = $plan ? 'Recurring' : 'One-Time';
 
-            $result =  '<div class="wp-stripe-notification wp-stripe-success"> ' . __('Success, you just transferred ', 'wp-stripe') . '<span class="wp-stripe-currency">' . $currency . '</span> ' . $amount . ' !</div>';
+            $result =  '<div class="wp-stripe-notification wp-stripe-success"> ' . __('Thank you! Your payment of ', 'wp-stripe') . '<span class="wp-stripe-currency">' . $currency . '</span> ' . $amount . ' was successful.<div>';
 
             // Save Charge
 
@@ -185,6 +315,7 @@ function wp_stripe_charge_initiate() {
                 update_post_meta( $post_id, 'wp-stripe-amount', $amount);
                 update_post_meta( $post_id, 'wp-stripe-currency', strtoupper($currency));
                 update_post_meta( $post_id, 'wp-stripe-fee', $fee);
+                update_post_meta( $post_id, 'wp-stripe-type', $type);
 
                 // Update Project
 

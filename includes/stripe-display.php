@@ -48,6 +48,22 @@ function wp_stripe_form() {
             <input type="text" name="wp_stripe_amount" autocomplete="off" class="wp-stripe-card-amount" id="wp-stripe-card-amount" placeholder="<?php _e('Amount (USD)', 'wp-stripe'); ?> *" required />
         </div>
 
+        <?php $options = get_option('wp_stripe_options'); if ( $options['stripe_recurring_switch'] == 'Yes' ): ?>
+        <div class="stripe-row">
+            <label><?php _e('Payment Type', 'wp-stripe'); ?></label>
+            <input type="radio" name="wp_stripe_type" class="wp-stripe-type" value="once" checked /> <span class="wp-stripe-radio-text">One-Time</span>
+            <input type="radio" name="wp_stripe_type" class="wp-stripe-type" value="recurring" /> <span class="wp-stripe-radio-text">Recurring</span>
+        </div>
+        <div class="stripe-row" id="frequency" style="display: none;">
+            <label><?php _e('Frequency', 'wp-stripe'); ?></label>
+            <select name="wp_stripe_interval" class="wp-stripe-interval">
+                <option value="month">Monthly</option>
+                <option value="year">Yearly</option>
+            </select>
+
+        </div>
+        <?php endif; ?>
+
         <div class="stripe-row">
             <input type="text" autocomplete="off" class="card-number" placeholder="<?php _e('Card Number', 'wp-stripe'); ?> *" required />
         </div>
@@ -91,7 +107,7 @@ function wp_stripe_form() {
 
         </div>
 
-        <?php $options = get_option('wp_stripe_options'); if ( $options['stripe_recent_switch'] == 'Yes' ) { ?>
+        <?php if ( $options['stripe_recent_switch'] == 'Yes' ) { ?>
 
         <div class="stripe-row">
 

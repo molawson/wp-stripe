@@ -57,6 +57,7 @@ function wp_stripe_options_display_trx() {
             $amount = $custom["wp-stripe-amount"][0];
             $fee = ($custom["wp-stripe-fee"][0])/100;
             $net = round($amount - $fee,2);
+            $type = $custom["wp-stripe-type"][0];
 
             echo '<tr>';
 
@@ -87,6 +88,7 @@ function wp_stripe_options_display_trx() {
 
             echo '<td>' . $dotlive . $dotpublic . '</td>';
             echo '<td>' . $person . '</td>';
+            echo '<td>' . $type . '</td>';
             echo '<td>' . $received . '</td>';
             echo '<td>' . $cleandate . ' - ' . $cleantime . '</td>';
             echo '<td class="stripe-comment">"' . $content . '"</td>';
