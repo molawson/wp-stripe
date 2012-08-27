@@ -231,11 +231,11 @@ function wp_stripe_options_page() {
 
                   <th style="width:44px;"><div class="dot-stripe-live"></div><div class="dot-stripe-public"></div></th>
                   <th style="width:180px;">Person</th>
-                  <th style="width:60px;">Type</th>
-                  <th style="width:100px;">Net Amount (Fee)</th>
-                  <th style="width:80px;">Date</th>
-
                   <th>Comment</th>
+                  <th style="width:100px;">Date</th>
+                  <th style="width:60px;">Type</th>
+                  <th style="width:80px; text-align: right;">Paid</th>
+                  <th style="width:80px; text-align: right;">Net</th>
 
               </tr></thead>
 

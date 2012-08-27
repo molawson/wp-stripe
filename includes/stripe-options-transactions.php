@@ -42,8 +42,10 @@ function wp_stripe_options_display_trx() {
 
             $time_format = get_option( 'time_format' );
 
-            // - variables -
+            // all Stripe transactions are in USD
+            setlocale(LC_MONETARY, 'en_US');
 
+            // - variables -
             $custom = get_post_custom( get_the_ID() );
             $id = ( $my_query->post->ID );
             $public = $custom["wp-stripe-public"][0];
@@ -55,8 +57,9 @@ function wp_stripe_options_display_trx() {
             $cleandate = date('d M', $date);
             $cleantime = date('H:i', $date);
             $amount = $custom["wp-stripe-amount"][0];
+            $paid = money_format( '%n', $amount );
             $fee = ($custom["wp-stripe-fee"][0])/100;
-            $net = round($amount - $fee,2);
+            $net = money_format( '%n', $amount - $fee );
             $type = $custom["wp-stripe-type"][0];
 
             echo '<tr>';
@@ -82,16 +85,17 @@ function wp_stripe_options_display_trx() {
 
             // Received
 
-            $received = '<span class="stripe-netamount"> + ' . $net . '</span> (-' . $fee . ')';
+            $received = '<span class="stripe-netamount">' . $net . '</span>';
 
             // Content
 
             echo '<td>' . $dotlive . $dotpublic . '</td>';
             echo '<td>' . $person . '</td>';
-            echo '<td>' . $type . '</td>';
-            echo '<td>' . $received . '</td>';
-            echo '<td>' . $cleandate . ' - ' . $cleantime . '</td>';
             echo '<td class="stripe-comment">"' . $content . '"</td>';
+            echo '<td>' . $cleandate . ' - ' . $cleantime . '</td>';
+            echo '<td>' . $type . '</td>';
+            echo '<td style="text-align: right;">' . $paid . '</td>';
+            echo '<td style="text-align: right;">' . $received . '</td>';
 
             echo '</tr>';
 
