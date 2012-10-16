@@ -14,7 +14,11 @@ function wp_stripe_shortcode( $atts ){
 
     $options = get_option('wp_stripe_options');
 
-    $settings = '?keepThis=true&TB_iframe=true&height=580&width=400';
+    if ( $options['stripe_address_switch'] == 'Yes' ) {
+      $settings = '?keepThis=true&TB_iframe=true&height=460&width=800';
+    } else {
+      $settings = '?keepThis=true&TB_iframe=true&height=580&width=400';
+    }
     $path = WP_STRIPE_PATH . '/includes/stripe-iframe.php'. $settings;
     $count = 1;
 
@@ -144,13 +148,14 @@ function wp_stripe_find_or_create_plan($amount, $interval) {
  * @param $email string
  * @param $card string
  * @param $plan_id int 
+ * @param $description string
  * @return array
  *
  * @since 1.4.5
  *
  */
 
-function wp_stripe_subscribe_customer_to_plan($email, $card, $plan_id) {
+function wp_stripe_subscribe_customer_to_plan($email, $card, $plan_id, $description) {
 
     $customer = array(
         'email' => $email,
@@ -158,7 +163,9 @@ function wp_stripe_subscribe_customer_to_plan($email, $card, $plan_id) {
         'plan' => $plan_id
     );
 
-    // TODO: build comment from extra form fields
+    if ( $description ) {
+        $customer['description'] = $description;
+    }
 
     $response = Stripe_Customer::create($customer);
 
@@ -230,11 +237,16 @@ function wp_stripe_charge_initiate() {
         $amount = str_replace('$', '', $_POST['wp_stripe_amount']) * 100;
         $card = $_POST['stripeToken'];
         $type = $_POST['wp_stripe_type'];
+        $details = 'Email: ' . $_POST['wp_stripe_email'];
 
-        if ( !$_POST['wp_stripe_comment'] ) {
-            $comment = __('E-mail: ', 'wp-stipe') . $_POST['wp_stripe_email'] . ' - ' . __('This transaction has no additional details', 'wp-stripe');
-        } else {
-            $comment = __('E-mail: ', 'wp-stipe') . $_POST['wp_stripe_email'] . ' - ' . $_POST['wp_stripe_comment'];
+        if ( $_POST['wp_stripe_address'] ) {
+            $address = implode(', ', array($_POST['wp_stripe_address'], $_POST['wp_stripe_city'], $_POST['wp_stripe_state'], $_POST['wp_stripe_zip']));
+            $phone = $_POST['wp_stripe_phone'];
+            $details .= ' // Address: ' . $address . ' // Phone: ' . $phone;
+        }
+
+        if ( $_POST['wp_stripe_comment'] ) {
+            $details .= ' // Comment: ' . $_POST['wp_stripe_comment'];
         }
 
         // Create Charge
@@ -250,7 +262,7 @@ function wp_stripe_charge_initiate() {
                 $plan = wp_stripe_find_or_create_plan($amount, $interval);
                 
                 // Subscribe the customer to that plan
-                $customer = wp_stripe_subscribe_customer_to_plan ($email, $card, $plan->id);
+                $customer = wp_stripe_subscribe_customer_to_plan ($email, $card, $plan->id, $details);
 
                 // Get the charge that we just created
                 $response = wp_stripe_find_customer_subscription_charge($customer->id, $plan->id);
@@ -258,7 +270,7 @@ function wp_stripe_charge_initiate() {
             // One Time donation
             } else {
 
-                $response = wp_stripe_charge($amount, $card, $name, $comment);
+                $response = wp_stripe_charge($amount, $card, $name, $details);
 
             }
 
@@ -281,7 +293,7 @@ function wp_stripe_charge_initiate() {
                     'ID' => '',
                     'post_type' => 'wp-stripe-trx',
                     'post_author' => 1,
-                    'post_content' => $comment,
+                    'post_content' => $details,
                     'post_title' => $id,
                     'post_status' => 'publish',
                 );

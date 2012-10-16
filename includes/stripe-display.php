@@ -13,42 +13,116 @@ function wp_stripe_form() {
 
     ob_start();
 
+    $options = get_option('wp_stripe_options');
+
     ?>
 
     <!-- Start WP-Stripe -->
 
-    <div id="wp-stripe-wrap">
+    <div id="wp-stripe-wrap"<?php if ( $options['stripe_address_switch'] == 'Yes' ): echo 'class="two-column"'; endif; ?>>
 
     <form id="wp-stripe-payment-form">
 
     <input type="hidden" name="action" value="wp_stripe_charge_initiate" />
     <input type="hidden" name="nonce" value="<?php echo wp_create_nonce( 'wp-stripe-nonce' ); ?>" />
 
-    <div class="wp-stripe-details">
+    <div class="wp-stripe-notification wp-stripe-failure payment-errors" style="display:none"></div>
 
-        <div class="wp-stripe-notification wp-stripe-failure payment-errors" style="display:none"></div>
+    <div class="wp-stripe-details">
 
         <div class="stripe-row">
                 <input type="text" name="wp_stripe_name" class="wp-stripe-name" placeholder="<?php _e('Name', 'wp-stripe'); ?> *" autofocus required />
         </div>
 
         <div class="stripe-row">
-                <input type="email" name="wp_stripe_email" class="wp-stripe-email" placeholder="<?php _e('E-mail', 'wp-stripe'); ?>" />
+                <input type="email" name="wp_stripe_email" class="wp-stripe-email" placeholder="<?php _e('E-mail', 'wp-stripe'); ?> *" required />
+        </div>
+
+        <?php if ( $options['stripe_address_switch'] == 'Yes' ): ?>
+        <div class="stripe-row">
+                <input type="text" name="wp_stripe_address" class="wp-stripe-address no-icon" placeholder="<?php _e('Address', 'wp-stripe'); ?> *" required />
         </div>
 
         <div class="stripe-row">
-                <textarea name="wp_stripe_comment" class="wp-stripe-comment" placeholder="<?php _e('Comment', 'wp-stripe'); ?>"></textarea>
+                <input type="text" name="wp_stripe_city" class="wp-stripe-city no-icon" placeholder="<?php _e('City', 'wp-stripe'); ?> *" required />
         </div>
+
+        <div class="stripe-row">
+          <div class="stripe-row-left">
+              <span class="stripe-expiry">STATE</span>
+              <select name="wp_stripe_state" class="wp-stripe-city">
+                  <option value="" selected="selected">Please select</option>
+                  <option value="AK">AK</option>
+                  <option value="AL">AL</option>
+                  <option value="AR">AR</option>
+                  <option value="AZ">AZ</option>
+                  <option value="CA">CA</option>
+                  <option value="CO">CO</option>
+                  <option value="CT">CT</option>
+                  <option value="DC">DC</option>
+                  <option value="DE">DE</option>
+                  <option value="FL">FL</option>
+                  <option value="GA">GA</option>
+                  <option value="HI">HI</option>
+                  <option value="IA">IA</option>
+                  <option value="ID">ID</option>
+                  <option value="IL">IL</option>
+                  <option value="IN">IN</option>
+                  <option value="KS">KS</option>
+                  <option value="KY">KY</option>
+                  <option value="LA">LA</option>
+                  <option value="MA">MA</option>
+                  <option value="MD">MD</option>
+                  <option value="ME">ME</option>
+                  <option value="MI">MI</option>
+                  <option value="MN">MN</option>
+                  <option value="MO">MO</option>
+                  <option value="MS">MS</option>
+                  <option value="MT">MT</option>
+                  <option value="NC">NC</option>
+                  <option value="ND">ND</option>
+                  <option value="NE">NE</option>
+                  <option value="NH">NH</option>
+                  <option value="NJ">NJ</option>
+                  <option value="NM">NM</option>
+                  <option value="NV">NV</option>
+                  <option value="NY">NY</option>
+                  <option value="OH">OH</option>
+                  <option value="OK">OK</option>
+                  <option value="OR">OR</option>
+                  <option value="PA">PA</option>
+                  <option value="RI">RI</option>
+                  <option value="SC">SC</option>
+                  <option value="SD">SD</option>
+                  <option value="TN">TN</option>
+                  <option value="TX">TX</option>
+                  <option value="UT">UT</option>
+                  <option value="VA">VA</option>
+                  <option value="VT">VT</option>
+                  <option value="WA">WA</option>
+                  <option value="WI">WI</option>
+                  <option value="WV">WV</option>
+                  <option value="WY">WY</option>
+              </select>
+          </div>
+          <div class="stripe-row-right">
+              <input type="text" name="wp_stripe_zip" class="wp-stripe-zip no-icon" placeholder="<?php _e('Zip', 'wp-stripe'); ?> *" required />
+          </div>
+        </div>
+
+        <div class="stripe-row">
+                <input type="text" name="wp_stripe_phone" class="wp-stripe-phone no-icon" placeholder="<?php _e('Phone Number', 'wp-stripe'); ?> *" required />
+        </div>
+        <?php endif; ?>
 
     </div>
 
     <div class="wp-stripe-card">
-
-        <div class="stripe-row">
+         <div class="stripe-row">
             <input type="text" name="wp_stripe_amount" autocomplete="off" class="wp-stripe-card-amount" id="wp-stripe-card-amount" placeholder="<?php _e('Amount (USD)', 'wp-stripe'); ?> *" required />
         </div>
 
-        <?php $options = get_option('wp_stripe_options'); if ( $options['stripe_recurring_switch'] == 'Yes' ): ?>
+        <?php if ( $options['stripe_recurring_switch'] == 'Yes' ): ?>
         <div class="stripe-row">
             <label><?php _e('Payment Type', 'wp-stripe'); ?></label>
             <input type="radio" name="wp_stripe_type" class="wp-stripe-type" value="once" checked /> <span class="wp-stripe-radio-text">One-Time</span>
@@ -63,6 +137,10 @@ function wp_stripe_form() {
 
         </div>
         <?php endif; ?>
+
+       <div class="stripe-row">
+                <textarea name="wp_stripe_comment" class="wp-stripe-comment" placeholder="<?php _e('Comment', 'wp-stripe'); ?>"></textarea>
+        </div>
 
         <div class="stripe-row">
             <input type="text" autocomplete="off" class="card-number" placeholder="<?php _e('Card Number', 'wp-stripe'); ?> *" required />
@@ -121,17 +199,20 @@ function wp_stripe_form() {
 
         <div style="clear:both"></div>
 
-        <input type="hidden" name="wp_stripe_form" value="1"/>
+        <div class="wp-stripe-actions">
+          <input type="hidden" name="wp_stripe_form" value="1"/>
 
-        <button type="submit" class="stripe-submit-button"><?php _e('Submit Payment', 'wp-stripe'); ?></button>
-        <div class="stripe-spinner"></div>
+          <button type="submit" class="stripe-submit-button"><?php _e('Submit Payment', 'wp-stripe'); ?></button>
+          <div class="stripe-spinner"></div>
+
+          <div class="wp-stripe-poweredby">Payments powered by <a href="http://wordpress.org/extend/plugins/wp-stripe" target="_blank">WP-Stripe</a>. No card information is stored on this server.</div>
+        </div>
 
 
     </form>
 
     </div>
 
-    <div class="wp-stripe-poweredby">Payments powered by <a href="http://wordpress.org/extend/plugins/wp-stripe" target="_blank">WP-Stripe</a>. No card information is stored on this server.</div>
 
     <!-- End WP-Stripe -->
 

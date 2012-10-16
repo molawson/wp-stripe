@@ -40,7 +40,7 @@ jQuery(document).ready(function($) {
                 data : newStripeForm,
                 success: function(response) {
 
-                    $('.wp-stripe-details').prepend(response);
+                    $('.wp-stripe-details').before(response);
                     $('.stripe-submit-button').prop("disabled", false).css("opacity","1.0");
                     resetStripeForm();
 

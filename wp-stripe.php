@@ -76,6 +76,8 @@ function wp_stripe_defaults() {
         'stripe_css_switch' => 'Yes',
         'stripe_api_switch'=>'Yes',
         'stripe_recent_switch'=>'Yes',
+        'stripe_recurring_switch'=>'No',
+        'stripe_address_switch'=>'No',
         'stripe_modal_ssl'=>'No'
     );
 

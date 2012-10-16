@@ -10,6 +10,13 @@
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
 
+#wp-stripe-wrap.two-column { width: 800px; }
+
+.two-column .wp-stripe-details,
+.two-column .wp-stripe-card { float: left; }
+
+.two-column .wp-stripe-actions { text-align: right; }
+
 /* Payment Form Link */
 
 #wp-stripe-modal-button {
@@ -98,9 +105,9 @@ form#wp-stripe-payment-form .stripe-row-right {
 
 form#wp-stripe-payment-form .stripe-submit-button {
         position:relative;
-        margin:10px;
+        margin:20px 10px;
         padding: 8px 15px;
-        display:block;
+        display:inline-block;
         font-weight: bold;
         font-size: 12px;
         background: #1275FF;
@@ -148,7 +155,7 @@ form#wp-stripe-payment-form .stripe-submit-button {
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
         color:#777;
         font-size:10px;
-        padding:0 20px;
+        padding:0 10px;
 }
 
 .wp-stripe-poweredby a {
@@ -161,9 +168,8 @@ form#wp-stripe-payment-form .stripe-submit-button {
 .wp-stripe-notification {
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-size: 12px;
-        width:360px;
         padding:10px;
-        margin:10px 0 10px 10px;
+        margin:10px;
         -webkit-border-radius: 5px;
         -moz-border-radius: 5px;
         border-radius: 5px;
@@ -222,6 +228,11 @@ form#wp-stripe-payment-form input {
         width:338px;
         background-color:#fff;
 }
+
+
+
+form#wp-stripe-payment-form .stripe-row-left span { padding-left:10px; }
+form#wp-stripe-payment-form .stripe-row-right input { width:148px; }
 
 input.wp-stripe-name {background: url('../images/h-name.png') no-repeat 8px 8px;}
 input.wp-stripe-email {background: url('../images/h-email.png') no-repeat 8px 10px;}
@@ -287,6 +298,13 @@ form#wp-stripe-payment-form .uneditable-input {
         -webkit-border-radius: 3px;
         -moz-border-radius: 3px;
         border-radius: 3px;
+}
+
+form#wp-stripe-payment-form input.no-icon,
+form#wp-stripe-payment-form textarea.no-icon,
+form#wp-stripe-payment-form select.no-icon,
+form#wp-stripe-payment-form .uneditable-input.no-icon {
+        padding: 8px 30px 8px 8px;
 }
 
 form#wp-stripe-payment-form input[type=checkbox], form#wp-stripe-payment-form input[type=radio] {
